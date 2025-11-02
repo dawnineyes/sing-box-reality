@@ -126,7 +126,7 @@ jq -n \
         "server": "1.1.1.1"
       }
     ],
-    "strategy": "prefer_ipv4"
+    "strategy": "ipv4_only"
   },
   inbounds: [
     {
@@ -161,7 +161,7 @@ jq -n \
       tag: "direct",
       "domain_resolver": {
         "server": "my_dns",
-        "strategy": "prefer_ipv4"
+        "strategy": "ipv4_only"
       }
     }
   ]
