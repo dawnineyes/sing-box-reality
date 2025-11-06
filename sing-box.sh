@@ -122,7 +122,7 @@ jq -n \
     "servers": [
       {
         "tag": "my_dns",
-        "type": "h3",
+        "type": "https",
         "server": "1.1.1.1"
       }
     ],
