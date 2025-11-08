@@ -122,8 +122,8 @@ jq -n \
     "servers": [
       {
         "tag": "my_dns",
-        "type": "https",
-        "server": "1.1.1.1"
+        "type": "h3",
+        "server": "8.8.8.8"
       }
     ],
     "strategy": "prefer_ipv4"
