@@ -123,7 +123,7 @@ jq -n \
       {
         "tag": "my_dns",
         "type": "h3",
-        "server": "1.1.1.1"
+        "server": "8.8.8.8"
       }
     ],
     "strategy": "prefer_ipv4"
