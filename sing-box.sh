@@ -122,8 +122,8 @@ jq -n \
     "servers": [
       {
         "tag": "my_dns",
-        "type": "h3",
-        "server": "8.8.8.8"
+        "type": "https",
+        "server": "1.1.1.1"
       }
     ],
     "strategy": "prefer_ipv4"
@@ -134,6 +134,7 @@ jq -n \
       tag: $tag,
       listen: $listen,
       listen_port: $port,
+      tcp_fast_open: true,
       users: [
         {
           uuid: $uuid,
