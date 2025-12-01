@@ -156,14 +156,35 @@ jq -n \
       }
     }
   ],
-  outbounds: [
+  "route": {
+    "rules": [
+      {
+        "rule_set": ["geoip-cn"],
+        "outbound": "block"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "geoip-cn",
+        "type": "remote",
+        "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geoip/cn.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      }
+    ]
+  },
+  "outbounds": [
     {
-      type: "direct",
-      tag: "direct",
+      "type": "direct",
+      "tag": "direct",
       "domain_resolver": {
         "server": "my_dns",
         "strategy": "prefer_ipv4"
       }
+    },
+    {
+      "type": "block",
+      "tag": "block"
     }
   ]
 }
