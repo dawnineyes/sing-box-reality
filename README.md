@@ -1,10 +1,10 @@
 ```bash
 安装
-bash <(curl -L https://github.com/dawnineyes/sing-box/raw/refs/heads/main/sing-box.sh)
+bash <(curl -L https://github.com/dawnineyes/sing-box-reality/raw/refs/heads/main/sing-box.sh)
 ```
 ```bash
 更新
-bash <(curl -L https://github.com/dawnineyes/sing-box/raw/refs/heads/main/update.sh)
+bash <(curl -L https://github.com/dawnineyes/sing-box-reality/raw/refs/heads/main/update.sh)
 ```
 ```
 # 停止并删除服务
