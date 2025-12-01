@@ -159,6 +159,10 @@ jq -n \
   "route": {
     "rules": [
       {
+        "action": "resolve",
+        "server": "my_dns",
+      },
+      {
         "rule_set": ["geoip-cn"],
         "outbound": "block"
       }
@@ -176,11 +180,7 @@ jq -n \
   "outbounds": [
     {
       "type": "direct",
-      "tag": "direct",
-      "domain_resolver": {
-        "server": "my_dns",
-        "strategy": "prefer_ipv4"
-      }
+      "tag": "direct"
     },
     {
       "type": "block",
