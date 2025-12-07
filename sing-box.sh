@@ -4,7 +4,7 @@ set -e
 
 # === 基本设置 ===
 INSTALL_DIR="/etc/sing-box"
-SNI="learn.microsoft.com"
+SNI="aod.itunes.apple.com"
 REALITY_DOMAIN="$SNI"
 
 # === 检查 root 权限 ===
