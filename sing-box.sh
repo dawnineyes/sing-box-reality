@@ -159,6 +159,10 @@ jq -n \
   "route": {
     "rules": [
       {
+        "ip_is_private": true,
+        "outbound": "block"
+      },
+      {
         "rule_set": ["geolocation-cn"],
         "outbound": "block"
       },
