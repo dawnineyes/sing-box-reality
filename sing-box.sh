@@ -214,7 +214,8 @@ After=network.target
 [Service]
 ExecStart=${INSTALL_DIR}/sing-box run -c ${INSTALL_DIR}/config.json
 Restart=on-failure
-User=nobody
+User=root
+Group=root
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
