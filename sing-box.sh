@@ -168,7 +168,7 @@ jq -n \
       },
       {
         "action": "resolve",
-        "server": "my_dns",
+        "server": "my_dns"
       },
       {
         "rule_set": ["geoip-cn"],
