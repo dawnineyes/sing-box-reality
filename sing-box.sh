@@ -189,7 +189,7 @@ jq -n \
         "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/geolocation-cn.srs",
         "format": "binary",
         "update_interval": "1d"
-      },
+      }
     ]
   },
   "outbounds": [
