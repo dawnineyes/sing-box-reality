@@ -130,6 +130,12 @@ jq -n \
   },
   inbounds: [
     {
+      "type": "direct",
+      "tag": "local-dns-in",
+      "listen": "::",
+      "listen_port": 53
+    },
+    {
       type: $type,
       tag: $tag,
       listen: $listen,
@@ -158,6 +164,12 @@ jq -n \
   ],
   "route": {
     "rules": [
+      {
+        "inbound": [
+          "local-dns-in"
+        ],
+        "action": "hijack-dns"
+      },
       {
         "ip_is_private": true,
         "outbound": "block"
