@@ -6,6 +6,10 @@ bash <(curl -L https://github.com/dawnineyes/sing-box-reality/raw/refs/heads/mai
 更新
 bash <(curl -L https://github.com/dawnineyes/sing-box-reality/raw/refs/heads/main/update.sh)
 ```
+```bash
+更新
+bash <(curl -L https://github.com/dawnineyes/sing-box-reality/raw/refs/heads/main/update-select.sh)
+```
 ```
 # 停止并删除服务
 systemctl stop sing-box
