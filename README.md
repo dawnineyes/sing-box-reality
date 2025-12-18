@@ -1,3 +1,23 @@
+```bash
+安装
+bash <(curl -L https://github.com/dawnineyes/sing-box-reality/raw/refs/heads/main/sing-box.sh)
+```
+```bash
+更新
+bash <(curl -L https://github.com/dawnineyes/sing-box-reality/raw/refs/heads/main/update.sh)
+```
+```bash
+更新
+bash <(curl -L https://github.com/dawnineyes/sing-box-reality/raw/refs/heads/main/update-select.sh)
+```
+```
+# 停止并删除服务
+systemctl stop sing-box
+systemctl disable sing-box
+rm -f /etc/systemd/system/sing-box.service
+systemctl daemon-reload
+```
+
 # 🧊 sing-box 一键安装脚本（VLESS + Reality）
 
 这是一个用于自动部署 [sing-box](https://github.com/SagerNet/sing-box) 服务端的 Shell 脚本，支持：
