@@ -4,7 +4,7 @@ set -e
 
 # === 基本设置 ===
 INSTALL_DIR="/etc/sing-box"
-SNI="updates.cdn-apple.com"
+SNI="aod.itunes.apple.com"
 REALITY_DOMAIN="$SNI"
 
 # === 检查 root 权限 ===
@@ -103,12 +103,14 @@ KEYS=$("$INSTALL_DIR/sing-box" generate reality-keypair)
 PRIVATE_KEY=$(echo "$KEYS" | grep 'PrivateKey' | awk '{print $2}')
 PUBLIC_KEY=$(echo "$KEYS" | grep 'PublicKey' | awk '{print $2}')
 UUID=$(uuidgen)
+SHORT_ID=$(echo -n ${UUID} | sha1sum | head -c 16)
 PORT=$(( ( RANDOM % 64510 )  + 1025 ))
 
 # === 使用 jq 生成配置文件 ===
 jq -n \
   --arg uuid "$UUID" \
   --arg private_key "$PRIVATE_KEY" \
+  --arg short_id "$SHORT_ID" \
   --arg sni "$SNI" \
   --arg listen "::" \
   --arg type "vless" \
@@ -116,12 +118,29 @@ jq -n \
   --argjson port "$PORT" \
   '
 {
+  "dns": {
+    "servers": [
+      {
+        "tag": "my_dns",
+        "type": "tls",
+        "server": "1.1.1.1"
+      }
+    ],
+    "strategy": "prefer_ipv4"
+  },
   inbounds: [
+    {
+      "type": "direct",
+      "tag": "local-dns-in",
+      "listen": "127.0.0.2",
+      "listen_port": 53
+    },
     {
       type: $type,
       tag: $tag,
       listen: $listen,
       listen_port: $port,
+      tcp_fast_open: true,
       users: [
         {
           uuid: $uuid,
@@ -137,15 +156,58 @@ jq -n \
             server: $sni,
             server_port: 443
           },
-          private_key: $private_key
+          private_key: $private_key,
+          "short_id": [ $short_id ]
         }
       }
     }
   ],
-  outbounds: [
+  "route": {
+    "rules": [
+      {
+        "inbound": [
+          "local-dns-in"
+        ],
+        "action": "hijack-dns"
+      },
+      {
+        "ip_is_private": true,
+        "action": "reject"
+      },
+      {
+        "rule_set": ["geolocation-cn"],
+        "action": "reject"
+      },
+      {
+        "action": "resolve",
+        "server": "my_dns"
+      },
+      {
+        "rule_set": ["geoip-cn"],
+        "action": "reject"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "geoip-cn",
+        "type": "remote",
+        "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geoip/cn.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "geolocation-cn",
+        "type": "remote",
+        "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/geolocation-cn.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      }
+    ]
+  },
+  "outbounds": [
     {
-      type: "direct",
-      tag: "direct"
+      "type": "direct",
+      "tag": "direct"
     }
   ]
 }
@@ -160,7 +222,8 @@ After=network.target
 [Service]
 ExecStart=${INSTALL_DIR}/sing-box run -c ${INSTALL_DIR}/config.json
 Restart=on-failure
-User=nobody
+User=root
+Group=root
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
@@ -197,7 +260,7 @@ else
 fi
 
 # === 输出 VLESS 链接 ===
-VLESS_URL="vless://${UUID}@${FORMATTED_IP}:${PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${SNI}&fp=chrome&pbk=${PUBLIC_KEY}#VLESS-REALITY"
+VLESS_URL="vless://${UUID}@${FORMATTED_IP}:${PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${SNI}&fp=chrome&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}#VLESS-REALITY"
 
 echo ""
 echo "✅ sing-box 安装并运行成功！"

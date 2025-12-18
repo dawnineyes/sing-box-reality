@@ -1,0 +1,154 @@
+{
+  "dns": {
+    "servers": [
+      {
+        "tag": "my_dns",
+        "type": "tls",
+        "server": "1.1.1.1"
+      }
+    ],
+    "strategy": "prefer_ipv4"
+  },
+  "inbounds": [
+    {
+      "tag": "local-dns-in",
+      "type": "direct",
+      "listen": "127.0.0.53",
+      "listen_port": 53
+    },
+    {
+      "tag": "ss-in",
+      "type": "shadowsocks",
+      "listen": "::",
+      "listen_port": 51937,
+      "tcp_fast_open": true,
+      "method": "2022-blake3-aes-256-gcm",
+      "password": $ss_pass
+    },
+    {
+      "tag": "vless-reality",
+      "type": "vless",
+      "listen": "::",
+      "listen_port": 51928,
+      "tcp_fast_open": true,
+      "users": [
+        {
+          "uuid": $uuid,
+          "flow": "xtls-rprx-vision"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "aod.itunes.apple.com",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "aod.itunes.apple.com",
+            "server_port": 443
+          },
+          "private_key": $private_key,
+          "short_id": [ $short_id ]
+        }
+      }
+    },
+    {
+      "tag": "tuic-in",
+      "type": "tuic",
+      "listen": "::",
+      "listen_port": 51946,
+      "users": [
+        {
+          "name": "umashine",
+          "uuid": $uuid,
+          "password": $tuic_pass
+        }
+      ],
+      "congestion_control": "bbr",
+      "tls": {
+        "enabled": true,
+        "server_name": $domain,
+        "alpn": ["h3"],
+        "min_version": "1.3",
+        "curve_preferences": ["X25519MLKEM768"],
+        "acme": {
+          "domain": [$domain],
+          "default_server_name": $domain,
+          "data_directory": "/etc/sing-box/letsencrypt",
+          "email": $email,
+          "provider": "letsencrypt",
+          "dns01_challenge": {
+            "provider": "cloudflare",
+            "api_token": $api_token
+          }
+        }
+      }
+    }
+  ],
+  "route": {
+    "default_domain_resolver": {
+      "server": "my_dns",
+      "rewrite_ttl": 30
+    },
+    "rules": [
+      {
+        "inbound": [
+          "local-dns-in"
+        ],
+        "action": "hijack-dns"
+      },
+      {
+        "source_ip_cidr": [
+          $source_ip_cidr/32
+        ],
+        "invert": true,
+        "action": "reject"
+      },
+      {
+        "ip_is_private": true,
+        "action": "reject"
+      },
+      {
+        "inbound":["ss-in"],
+        "rule_set": [
+          "geoip-cn"
+        ],
+        "rule_set_ip_cidr_match_source":true,
+        "action": "reject"
+      },
+      {
+        "rule_set": ["geolocation-cn"],
+        "action": "reject"
+      },
+      {
+        "action": "resolve",
+        "server": "my_dns"
+      },
+      {
+        "rule_set": ["geoip-cn"],
+        "action": "reject"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "geoip-cn",
+        "type": "remote",
+        "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geoip/cn.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "geolocation-cn",
+        "type": "remote",
+        "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/sing/geo/geosite/geolocation-cn.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      }
+    ]
+  },
+  "outbounds": [
+    {
+      "tag": "direct",
+      "type": "direct"
+    }
+  ]
+}
