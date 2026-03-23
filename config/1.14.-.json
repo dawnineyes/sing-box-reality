@@ -1,0 +1,309 @@
+{
+  "ntp": {
+    "enabled": true,
+    "server": "time.apple.com",
+    "server_port": 123,
+    "interval": "30m"
+  },
+  "http_clients": [
+    {
+      "tag": "download"
+    }
+  ],
+  "dns": {
+    "servers": [
+      {
+        "tag": "my_dns",
+        "type": "tls",
+        "server": "1.1.1.1"
+      }
+    ],
+    "strategy": "prefer_ipv4"
+  },
+  "certificate_providers": [
+    {
+      "type": "acme",
+      "tag": "acme-certificate",
+      "domain": [$domain],
+      "default_server_name": $domain,
+      "email": $email,
+      "provider": "letsencrypt",
+      "dns01_challenge": {
+        "provider": "cloudflare",
+        "api_token": $cf_api_token
+      },
+      "http_client": "download"
+    }
+  ],
+  "inbounds": [
+    {
+      "tag": "local-dns-in",
+      "type": "direct",
+      "listen": "127.53.53.53",
+      "listen_port": 53
+    },
+    {
+      "tag": "to-$remote",
+      "type": "direct",
+      "listen": "::",
+      "listen_port": $port,
+      "tcp_fast_open": true,
+      "override_address": "$remote_ip_domain",
+      "override_port": $port
+    },
+    {
+      "tag": "ss-in",
+      "type": "shadowsocks",
+      "listen": "::",
+      "listen_port": 52001,
+      "tcp_fast_open": true,
+      "method": "2022-blake3-chacha20-poly1305",
+      "password": $ss_pass,
+      "multiplex": {
+        "enabled": true,
+        "padding": true
+      }
+    },
+    {
+      "tag": "vless-reality",
+      "type": "vless",
+      "listen": "::",
+      "listen_port": 52002,
+      "tcp_fast_open": true,
+      "users": [
+        {
+          "uuid": $uuid,
+          "flow": "xtls-rprx-vision"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "aod.itunes.apple.com",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "aod.itunes.apple.com",
+            "server_port": 443
+          },
+          "private_key": $private_key,
+          "short_id": [ $short_id ]
+        }
+      }
+    },
+    {
+      "tag": "tuic-in",
+      "type": "tuic",
+      "listen": "::",
+      "listen_port": 52003,
+      "users": [
+        {
+          "name": "umashine",
+          "uuid": $uuid,
+          "password": $tuic_pass
+        }
+      ],
+      "congestion_control": "bbr",
+      "auth_timeout": "2s",
+      "zero_rtt_handshake": true,
+      "heartbeat": "8s",
+      "tls": {
+        "enabled": true,
+        "server_name": $domain,
+        "alpn": ["h3"],
+        "min_version": "1.3",
+        "curve_preferences": ["X25519", "X25519MLKEM768"],
+        "certificate_provider": "acme-certificate",
+        "ech": {
+          "enabled": true,
+          "key": [$keys]
+        }
+      },
+      "initial_packet_size": 998,
+      "stream_receive_window": "8MB",
+      "max_concurrent_streams": 1000
+    },
+    {
+      "tag": "anytls-in",
+      "type": "anytls",
+      "listen": "::",
+      "listen_port": 52004,
+      "users": [
+        {
+          "name": "umashine",
+          "password": $anytls_pass
+        }
+      ],
+      "padding_scheme": [
+        "stop=12",
+        "0=24-80",
+        "1=96-220",
+        "2=240-420,c,480-720",
+        "3=32-64,600-1200",
+        "4=128-256,c,900-1400",
+        "5=300-700",
+        "6=600-1600,c,200-400",
+        "7=64-128,800-1800",
+        "8=1200-2400",
+        "9=300-900,c,1500-3000",
+        "10=90-180",
+        "11=700-2200"
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": $domain,
+        "alpn": ["h3"],
+        "min_version": "1.3",
+        "curve_preferences": ["X25519MLKEM768"],
+        "certificate_provider": "acme-certificate",
+        "ech": {
+          "enabled": true,
+          "key": [$keys]
+        }
+      }
+    },
+    {
+      "tag": "naive-in",
+      "type": "naive",
+      "listen": "::",
+      "listen_port": 52005,
+      "users": [
+        {
+          "username": $uuid,
+          "password": $password
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": $domain,
+        "min_version": "1.3",
+        "curve_preferences": ["X25519MLKEM768"],
+        "certificate_provider": "acme-certificate"
+      }
+    },
+    {
+      "tag": "hy2-in",
+      "type": "hysteria2",
+      "listen": "::",
+      "listen_port": 53000,
+      "up_mbps": 100,
+      "down_mbps": 100,
+      "ignore_client_bandwidth": false,
+      "obfs": {
+        "type": "salamander",
+        "password": $obfs_pass
+      },
+      "users": [
+        {
+          "name": "umashine",
+          "password": $uuid
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": $domain,
+        "alpn": ["h3"],
+        "min_version": "1.3",
+        "curve_preferences": ["X25519MLKEM768"],
+        "certificate_provider": "acme-certificate"
+      },
+      "masquerade": {
+        "type": "proxy",
+        "url":"aod.itunes.apple.com"
+      },
+      "brutal_debug": false
+    }
+  ],
+  "route": {
+    "default_domain_resolver": "my_dns",
+    "default_http_client": "download",
+    "rules": [
+      {
+        "inbound": [
+          "local-dns-in"
+        ],
+        "action": "hijack-dns"
+      },
+      {
+        "source_ip_cidr": [
+          $source_ip_cidr/32
+        ],
+        "invert": true,
+        "action": "reject"
+      },
+      {
+        "ip_is_private": true,
+        "action": "reject"
+      },
+      {
+        "inbound":["ss-in"],
+        "rule_set": [
+          "geoip-cn"
+        ],
+        "rule_set_ip_cidr_match_source":true,
+        "action": "reject"
+      },
+      {
+        "action": "resolve",
+        "server": "my_dns"
+      },
+      {
+        "ip_cidr": [
+          $source_ip_cidr/32
+        ],
+        "outbound": "direct"
+      },
+      {
+        "rule_set": ["geoip-cn2"],
+        "action": "reject"
+      },
+      {
+        "rule_set": ["geoip-cn"],
+        "action": "reject"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "geoip-cn",
+        "type": "remote",
+        "url": "https://github.com/SagerNet/sing-geoip/raw/refs/heads/rule-set/geoip-cn.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "geoip-cn2",
+        "type": "remote",
+        "url": "https://github.com/dawnineyes/rule/raw/refs/heads/main/sing-box/geoip/geoip2-cn.json",
+        "format": "source",
+        "update_interval": "1d"
+      }
+    ]
+  },
+  "outbounds": [
+    {
+      "tag": "direct",
+      "type": "direct"
+    }
+  ],
+  "endpoints": [
+    {
+      "tag": "wg-ep",
+      "type": "wireguard",
+      "name": "wg-ep",
+      "address": [
+        $10.0.zone.1/32
+      ],
+      "mtu": 1280,
+      "listen_port": 50001,
+      "private_key": $private_key,
+      "system": false,
+      "peers": [
+        {
+          "port": 50001,
+          "public_key": $public_key,
+          "allowed_ips": ["0.0.0.0/0", "::/0"],
+          "persistent_keepalive_interval": 20
+        }
+      ]
+    }
+  ]
+}
